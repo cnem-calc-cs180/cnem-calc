@@ -104,9 +104,9 @@ class CNEM_Calc:
 if __name__ == "__main__":
     print()
     # DEFAULTS
-    recipes_filename = "recipes.db"
-    prices_filename = "prices.db"
-    nutrition_filename = "nutrition.db"
+    recipes_filename = "recipes.csv"
+    prices_filename = "prices.csv"
+    nutrition_filename = "nutrition.csv"
     args = sys.argv
 
     # PARSE TERMINAL ARGS
