@@ -6,9 +6,9 @@ class CNEM_Calc:
     FIELD_INDEX = {
         "cost": -1,
         "protein": -1,
-        "fats": -1,
+        "fat": -1,
         "carbohydrates": -1,
-        "calories": -1
+        "energy": -1
     } # should tell u in which column these fields can be found sa recipes db
     # please update when possible :)
 
@@ -20,7 +20,7 @@ class CNEM_Calc:
         self.min_constraint_funcs = [self.min_nutrition_requirement]
         self.constraint_tolerance = -1
 
-        self.nutrients = ["protein", "fats", "carbohydrates", "calories"]
+        self.nutrients = ["protein", "fat", "carbohydrates", "energy"]
         self.parameters = self.nutrients + ["cost"]
         self.n_meals = 3    # number of meals in a mealset
         self.n_mealsets = 5 # number of mealsets suggested
@@ -32,6 +32,11 @@ class CNEM_Calc:
                 if not recipes[index][recipes_h.index(ingredient[0])]: continue
                 cost += float(recipes[index][recipes_h.index(ingredient[0])]) * float(ingredient[1]) # if preprocessed, can remove float typecast
             self.recipes[index] += [cost]
+        recipes_h += ["cost"]
+
+        #field index set
+        for field in self.FIELD_INDEX.keys():
+            self.FIELD_INDEX[field] = recipes_h.index(field)
 
     def get_meal_value(self, meal_index, param):
         return meal_index[self.FIELD_INDEX[param]]
