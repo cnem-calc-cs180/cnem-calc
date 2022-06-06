@@ -51,7 +51,8 @@ def backtrack(n_values, n_variables, n_suggestions, current_state = [], valid_st
 
         return valid_states
 
-    for n in range(n_values): # go through all possible indices
+    previous_index = current_state[-1]
+    for n in range(previous_index+1, n_values): # go through all combinations of indices
         next_state = current_state.copy() # make a copy of the meal set
         next_state.append(n) # and add the current meal to the set
         backtrack(n_values, n_variables, n_suggestions, next_state, valid_states) # get the next meal
