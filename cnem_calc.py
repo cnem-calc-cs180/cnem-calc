@@ -17,7 +17,7 @@ class CNEM_Calc:
         self.recipes = []
         self.nutrition_constraints = {} # {nutrition(str) : [target (int), min tolerance (0-1, float), max tolerance (0-inf, float)]}
         self.max_constraint_funcs = [self.cost_bound, self.max_nutrition_limit]
-        self.min_constraint_funcs = []
+        self.min_constraint_funcs = [self.min_nutrition_requirement]
         self.constraint_tolerance = -1
 
         self.nutrients = ["protein", "fats", "carbohydrates", "calories"]
@@ -102,22 +102,52 @@ class CNEM_Calc:
         return valid_mealsets
 
 if __name__ == "__main__":
+    print()
     # DEFAULTS
     recipes_filename = "recipes.db"
     prices_filename = "prices.db"
-
+    nutrition_filename = "nutrition.db"
     args = sys.argv
 
     # PARSE TERMINAL ARGS
     # # # # #
+    if "-M" in args:
+        print("You have entered Manual Input Mode (-M)")
+        print("Please enter the filepath for the following files")
+        print("(Enter nothing to use default value)")
+        print("--------------------------------------------------")
+
+        # Recipes
+        buf = input("Recipe database: ").strip()
+        if buf != "":
+            recipes_filename = buf
+        buf = input("Ingredient pricelist: ").strip()
+        if buf != "":
+            prices_filename = buf
+        buf = input("Constraint list: ").strip()
+        if buf != "":
+            nutrition_filename = buf
+    else:
+        if "-r" in args:
+            recipes_filename = args[args.index("-r")+1].replace('"', '').replace("'", "")
+        if "-p" in args:
+            prices_filename = args[args.index("-p")+1].replace('"', '').replace("'", "")
+        if "-c" in args:
+            nutrition_filename = args[args.index("-c")+1].replace('"', '').replace("'", "")
 
     meal_calc = CNEM_Calc()
-
-
-
+    
+    # OPEN FILES HERE #
+    # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
 # how do you expect to run this?
 # > py cnem_calc.py
 # >>> this should be able to run defaults
 # >>> external parameters: price, recipes, constraints
 # >>>>>> madali lang defaults ng recipes at constraints, pero price hmm
+
+# What do you want to tweak?
+# > Recipe source (-r <filepath>)
+# > Price source (-p <filepath>)
+# > Constraints? (-c <filepath>)
+# > Manual mode (-M)
