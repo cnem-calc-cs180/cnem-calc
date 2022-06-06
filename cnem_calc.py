@@ -104,9 +104,9 @@ class CNEM_Calc:
 if __name__ == "__main__":
     print()
     # DEFAULTS
-    recipes_filename = "recipes.db"
-    prices_filename = "prices.db"
-    nutrition_filename = "nutrition.db"
+    recipes_filename = "recipes.csv"
+    prices_filename = "prices.csv"
+    nutrition_filename = "nutrition.csv"
     args = sys.argv
 
     # PARSE TERMINAL ARGS
@@ -137,6 +137,16 @@ if __name__ == "__main__":
 
     meal_calc = CNEM_Calc()
     
+    recipes = []
+    recipes_h  = []
+    prices = []
+
+    with open(recipes_filename, 'r') as recipes_db:
+        recipes = csv.reader(recipes_db)
+        recipes_h = recipes.pop(0) # recipes header
+
+    with open(prices_filename, 'r') as prices_db:
+        prices = csv.reader(prices_db)
     # OPEN FILES HERE #
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
