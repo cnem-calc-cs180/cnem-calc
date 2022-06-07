@@ -6,24 +6,37 @@ class CNEM_Calc:
     FIELD_INDEX = {
         "cost": -1,
         "protein": -1,
-        "fats": -1,
+        "fat": -1,
         "carbohydrates": -1,
-        "calories": -1
+        "energy": -1
     } # should tell u in which column these fields can be found sa recipes db
     # please update when possible :)
 
-    def init(self):
-        self.prices = []
-        self.recipes = []
+    def __init__(self, recipes_h, recipes, prices, nutrition):
+        self.prices = prices
+        self.recipes = recipes
         self.nutrition_constraints = {} # {nutrition(str) : [target (int), min tolerance (0-1, float), max tolerance (0-inf, float)]}
         self.max_constraint_funcs = [self.cost_bound, self.max_nutrition_limit]
         self.min_constraint_funcs = [self.min_nutrition_requirement]
         self.constraint_tolerance = -1
 
-        self.nutrients = ["protein", "fats", "carbohydrates", "calories"]
+        self.nutrients = ["protein", "fat", "carbohydrates", "energy"]
         self.parameters = self.nutrients + ["cost"]
         self.n_meals = 3    # number of meals in a mealset
         self.n_mealsets = 5 # number of mealsets suggested
+
+        #cost calculation
+        for index, recipe in enumerate(self.recipes):
+            cost = 0
+            for ingredient in self.prices:
+                if not recipes[index][recipes_h.index(ingredient[0])]: continue
+                cost += float(recipes[index][recipes_h.index(ingredient[0])]) * float(ingredient[1]) # if preprocessed, can remove float typecast
+            self.recipes[index] += [cost]
+        recipes_h += ["cost"]
+
+        #field index set
+        for field in self.FIELD_INDEX.keys():
+            self.FIELD_INDEX[field] = recipes_h.index(field)
 
     def get_meal_value(self, meal_index, param):
         return meal_index[self.FIELD_INDEX[param]]
@@ -134,10 +147,24 @@ if __name__ == "__main__":
             prices_filename = args[args.index("-p")+1].replace('"', '').replace("'", "")
         if "-c" in args:
             nutrition_filename = args[args.index("-c")+1].replace('"', '').replace("'", "")
-
-    meal_calc = CNEM_Calc()
     
-    # OPEN FILES HERE #
+    recipes = []
+    recipes_h  = []
+    prices = []
+    nutrition = []
+
+    with open(recipes_filename, 'r') as recipes_db:
+        recipes = list(csv.reader(recipes_db))
+        recipes_h = recipes.pop(0) # recipes header
+
+    with open(prices_filename, 'r') as prices_db:
+        prices = list(csv.reader(prices_db))
+
+    with open(nutrition_filename, 'r') as nutrition_db:
+        nutrition = list(csv.reader(nutrition_db))
+
+    meal_calc = CNEM_Calc(recipes_h, recipes, prices, nutrition)
+    
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
 # how do you expect to run this?
