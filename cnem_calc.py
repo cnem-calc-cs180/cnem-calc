@@ -109,7 +109,7 @@ class CNEM_Calc:
                 parameter : param_values[parameter] + self.get_meal_value(n, parameter) \
                 for parameter in parameters}
             if not self.within_max_constraints(next_meals, next_param_values, valid_mealsets):
-                return valid_mealsets
+                continue
             valid_mealsets = self.backtrack(next_meals, valid_mealsets, next_param_values)
         
         return valid_mealsets
