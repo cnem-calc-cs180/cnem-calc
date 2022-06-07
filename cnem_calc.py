@@ -41,7 +41,14 @@ class CNEM_Calc:
         #field index set
         for field in self.FIELD_INDEX.keys():
             self.FIELD_INDEX[field] = recipes_h.index(field)
-
+            
+        #self.FIELD_INDEX["meal"] = 1
+        #add ingredients to field index
+        #start = recipes_h.index("Rice (kg)")
+        #for i in range(start,len(recipes_h)-1):
+        #    self.FIELD_INDEX[recipes_h[i]] = i
+        #    pass
+            
     def get_meal_value(self, meal_index, param):
         output = self.recipes[meal_index][self.FIELD_INDEX[param]]
         try:
@@ -58,6 +65,18 @@ class CNEM_Calc:
 
     def get_mealset_cost(self, mealset):
         return self.get_mealset_value(mealset, "cost")
+
+    def get_mealset_ingredients(self, mealset):
+        total = []
+        start = recipes_h.index("Rice (kg)")
+        for i in range(start,len(recipes_h)-1):
+            ingredient = recipes_h[i]
+            amount = 0
+            for m in mealset:
+                amount += float(self.recipes[m][i])
+            if amount > 0:
+                total.append([ingredient,round(amount,3)])
+        return total
 
     def within_max_constraints(self, current_meals, param_values, valid_mealsets):
         for constraint_func in self.max_constraint_funcs:
@@ -131,6 +150,19 @@ class CNEM_Calc:
             valid_mealsets = self.recursive_backtrack(next_meals, valid_mealsets, next_param_values)
         
         return valid_mealsets
+def print_suggestion(mc, s, mealset):
+    print("--------------------------------------------------")
+    print("Suggestion " + str(s) + " - P" + str(round(mc.get_mealset_cost(mealset),2)) + ":")
+    for meal in mealset:
+        print(" - " + mc.recipes[meal][1])
+    print()
+
+def print_suggestion_ingredients(mc, mealset):
+    ingredients = mc.get_mealset_ingredients(mealset)
+    print("Total Ingredients:")
+    for i,a in ingredients:
+        print(i + ": " + str(a))
+    print()
 
 if __name__ == "__main__":
     print()
@@ -190,43 +222,36 @@ if __name__ == "__main__":
 
     output = meal_calc.recursive_backtrack()
     buf = ""
-
-    print(output)
-    print()
-    #Display suggestions
+    
+    print("==================================================")
     print("Top 5 Suggestions\n")
     for i in range(5):
         if i == len(output):
             break
-        print("--------------------------------------------------")
-        print("Suggestion " + str(i+1) + " - P" + str(round(meal_calc.get_mealset_cost(output[i]),2)) + ":")
-        s = output[i]
-        for meal in s:
-            print(" - " + meal_calc.recipes[meal][1])
-        print()
+        print_suggestion(meal_calc, i+1, output[i])
 
-            
     while True:
         buf = input("Pahingi suggestion number (type -1 to stop): ")
         if buf in ["-1", "exit"]:
                 break
         try:
             buf = int(buf)
-            if buf > len(output):
-                print("Try a smaller number")
-                continue
-            print("--------------------------------------------------")
-            print("Suggestion " + str(buf) + " - P" + str(round(meal_calc.get_mealset_cost(output[buf-1]),2)) + ":")
-            for meal in s:
-                print(" - " + meal_calc.recipes[meal][buf])
-            print()
-
-            #Ingredients
         except:
-             print("Please enter a valid number")
+            print("Please enter a valid number")
+        if buf > len(output):
+            print("Try a smaller number")
+            continue
+            
+        print_suggestion(meal_calc, buf, output[buf-1])
+        print_suggestion_ingredients(meal_calc, output[buf-1])
         
+        print("==================================================")
+        print("Top 5 Suggestions")
+        for i in range(5):
+            if i == len(output):
+                break
+            print_suggestion(meal_calc, i+1, output[i])
         
-        # output ingredients for output[int(buf)]
     
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
