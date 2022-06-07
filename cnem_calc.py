@@ -15,7 +15,7 @@ class CNEM_Calc:
     def __init__(self, recipes_h, recipes, prices, nutrition):
         self.prices = prices
         self.recipes = recipes
-        self.nutrition_constraints = {} # {nutrition(str) : [target (int), min tolerance (0-1, float), max tolerance (0-inf, float)]}
+        self.nutrition_constraints = {constraint[0]:[float(v) for v in constraint[1:]] for constraint in nutrition} # {nutrition(str) : [target (int), min tolerance (0-1, float), max tolerance (0-inf, float)]}
         self.max_constraint_funcs = [self.cost_bound, self.max_nutrition_limit]
         self.min_constraint_funcs = [self.min_nutrition_requirement]
         self.constraint_tolerance = -1
@@ -78,6 +78,7 @@ class CNEM_Calc:
             max_tolerance = nutrition_constraints[nutrient][2]
             limit = target * (1 + max_tolerance)
             if param_values[nutrient] > limit:
+                print("Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
                 return False
         return True
 
