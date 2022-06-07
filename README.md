@@ -33,3 +33,23 @@ By default, cnem-calc counts 3 meals as a mealset and suggests upto 5 mealsets p
 Example:
 
 `py cnem_calc.py --nm 5 --ns 20`
+
+## Outline
+### Datasets
+1. Dataset A (Model Correctness)
+  Arbitrary test data made for ease of manual calculations to compare if the implementation outputs accurate and verified results from the same information.
+2. Dataset B (Real World Data)
+  Realistic data gathered from databases to verify real world usability.
+  - Ingredient prices: DOA Market price reports
+  - Recipes: Select recipes from RecipeDB
+  - Nutrition requirements: Default target values from Australia New Zealand Food Standards Code (FSC), tolerances were estimated.
+### Assumptions and Limitations
+1. Assumptions
+  - Basic condiments are assumed to already be in posession.
+  - Real world data is assumed to be accurate.
+2. Limitations
+  - Limited ingredients due to market price report limits.
+  - No option to export entire recipe and ingredient database from the source.
+  - Limited options for recipes due to limited ingredients.
+### Backtracking
+The implementation uses a Search Tree using Backtracking Search with branch pruning/brand and bounds. It goes through all the possible meal combinations until a set that satisfies the user's set amount (default: 3) of meals has been reached. These mealsets are tested against the minimum and maximum constraints, upon being above the minimum but below the maximum, the set is considered "valid". Valid mealsets will be sorted according to the calculated cost.
