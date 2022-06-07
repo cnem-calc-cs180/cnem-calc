@@ -182,7 +182,14 @@ if __name__ == "__main__":
     if "--ns" in args:
         meal_calc.n_mealsets = int(args[args.index("--ns")+1].replace('"', '').replace("'", ""))
 
-    print(meal_calc.recursive_backtrack())
+    output = meal_calc.recursive_backtrack()
+    buf = ""
+
+    print(output)
+
+    while (buf not in ["-1", "exit"]):
+        buf = input("Pahingi suggestion number: ")
+        # output ingredients for output[int(buf)]
     
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
