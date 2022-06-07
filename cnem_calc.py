@@ -17,13 +17,14 @@ class CNEM_Calc:
         self.recipes = recipes
         self.nutrition_constraints = {constraint[0]:[float(v) for v in constraint[1:]] for constraint in nutrition} # {nutrition(str) : [target (int), min tolerance (0-1, float), max tolerance (0-inf, float)]}
         self.max_constraint_funcs = [self.cost_bound, self.max_nutrition_limit]
+        self.max_constraint_funcs_no_bounds = [self.max_nutrition_limit]
         self.min_constraint_funcs = [self.min_nutrition_requirement]
-        self.constraint_tolerance = -1
 
         self.nutrients = ["protein", "fat", "carbohydrates", "energy"]
         self.parameters = self.nutrients + ["cost"]
         self.n_meals = 3    # number of meals in a mealset
         self.n_mealsets = 5 # number of mealsets suggested
+        self.recursion_calls = 0
 
         #cost calculation
         for index, recipe in enumerate(self.recipes):
@@ -84,6 +85,12 @@ class CNEM_Calc:
                 return False
         return True
 
+    def within_max_constraints_no_bounds(self, current_meals, param_values, valid_mealsets):
+        for constraint_func in self.max_constraint_funcs_no_bounds:
+            if not constraint_func(current_meals, param_values, valid_mealsets):
+                return False
+        return True
+
     def cost_bound(self, current_meals, param_values, valid_mealsets):
         n_mealsets = self.n_mealsets
         if len(valid_mealsets) < n_mealsets:
@@ -98,7 +105,7 @@ class CNEM_Calc:
             if max_tolerance < 0: continue
             limit = target * (1 + max_tolerance)
             if param_values[nutrient] > limit:
-                #print("Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
+                # print("Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
                 return False
         return True
 
@@ -121,6 +128,7 @@ class CNEM_Calc:
         return True
 
     def recursive_backtrack(self, current_meals = [], valid_mealsets = [], param_values = {}):
+        self.recursion_calls += 1
         n_recipes = len(self.recipes)
         n_meals = self.n_meals
         n_mealsets = self.n_mealsets
@@ -136,7 +144,7 @@ class CNEM_Calc:
             valid_mealsets = valid_mealsets if len(valid_mealsets) <= n_mealsets else valid_mealsets[:n_mealsets]
             return valid_mealsets
         
-        previous_index = current_meals[-1] if len(current_meals) > 0 else 0
+        previous_index = current_meals[-1] if len(current_meals) > 0 else -1
         for n in range(previous_index+1, n_recipes):
             # print(current_meals, "+", n)
             next_meal_index = n
@@ -150,6 +158,41 @@ class CNEM_Calc:
             valid_mealsets = self.recursive_backtrack(next_meals, valid_mealsets, next_param_values)
         
         return valid_mealsets
+
+    def recursive_backtrack_no_bounds(self, current_meals = [], valid_mealsets = [], param_values = {}):
+        self.recursion_calls += 1
+        # Branch and Bounds is removing expensive meals
+        n_recipes = len(self.recipes)
+        n_meals = self.n_meals
+        n_mealsets = self.n_mealsets
+        parameters = self.parameters
+        param_values = {parameter : 0 for parameter in parameters} if param_values == {} else param_values
+
+        if len(current_meals) >= n_meals:
+            if not self.within_min_constraints(current_meals, param_values, valid_mealsets):
+                return valid_mealsets
+            valid_mealsets.append(current_meals)
+            valid_mealsets.sort(key=self.get_mealset_cost)
+            too_expensive = [] if len(valid_mealsets) <= n_mealsets else valid_mealsets[n_mealsets:]
+            valid_mealsets = valid_mealsets if len(valid_mealsets) <= n_mealsets else valid_mealsets[:n_mealsets]
+            return valid_mealsets
+        
+        previous_index = current_meals[-1] if len(current_meals) > 0 else -1
+        for n in range(previous_index+1, n_recipes):
+            # print(current_meals, "+", n)
+            next_meal_index = n
+            next_meals = current_meals + [next_meal_index]
+            next_param_values = { \
+                parameter : param_values[parameter] + self.get_meal_value(n, parameter) \
+                for parameter in parameters}
+            if not self.within_max_constraints_no_bounds(next_meals, next_param_values, valid_mealsets):
+                # print("OOF")
+                continue
+            valid_mealsets = self.recursive_backtrack(next_meals, valid_mealsets, next_param_values)
+        
+        return valid_mealsets
+#END OF CNEM_CALC
+  
 def print_suggestion(mc, s, mealset):
     print("--------------------------------------------------")
     print("Suggestion " + str(s) + " - P" + str(round(mc.get_mealset_cost(mealset),2)) + ":")
@@ -163,6 +206,7 @@ def print_suggestion_ingredients(mc, mealset):
     for i,a in ingredients:
         print(i + ": " + str(a))
     print()
+
 
 if __name__ == "__main__":
     print()
@@ -178,7 +222,7 @@ if __name__ == "__main__":
         print("You have entered Manual Input Mode (-M)")
         print("Please enter the filepath for the following files")
         print("(Enter nothing to use default value)")
-        print("--------------------------------------------------")
+        print("--------------------------------------")
 
         # Recipes
         buf = input("Recipe database: ").strip()
@@ -221,6 +265,8 @@ if __name__ == "__main__":
         meal_calc.n_mealsets = int(args[args.index("--ns")+1].replace('"', '').replace("'", ""))
 
     output = meal_calc.recursive_backtrack()
+    print(output)
+    
     buf = ""
     
     print("==================================================")
@@ -231,27 +277,30 @@ if __name__ == "__main__":
         print_suggestion(meal_calc, i+1, output[i])
 
     while True:
-        buf = input("Pahingi suggestion number (type -1 to stop): ")
+        buf = input("Enter suggestion number: ")
         if buf in ["-1", "exit"]:
                 break
+        if buf.lower() == "top":
+            print("==================================================")
+            print("Top 5 Suggestions")
+            for i in range(5):
+                if i == len(output):
+                    break
+                print_suggestion(meal_calc, i+1, output[i])
         try:
             buf = int(buf)
+            if buf > len(output):
+                print("Try a smaller number")
+                continue
         except:
             print("Please enter a valid number")
-        if buf > len(output):
-            print("Try a smaller number")
             continue
-            
+        
         print_suggestion(meal_calc, buf, output[buf-1])
         print_suggestion_ingredients(meal_calc, output[buf-1])
-        
-        print("==================================================")
-        print("Top 5 Suggestions")
-        for i in range(5):
-            if i == len(output):
-                break
-            print_suggestion(meal_calc, i+1, output[i])
-        
+
+        print("To show Top 5 Suggestions again, type 'top'")
+        print("To exit, type 'exit'")
     
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
