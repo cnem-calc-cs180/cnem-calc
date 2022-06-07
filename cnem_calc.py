@@ -76,6 +76,7 @@ class CNEM_Calc:
         for nutrient in nutrition_constraints.keys():
             target = nutrition_constraints[nutrient][0]
             max_tolerance = nutrition_constraints[nutrient][2]
+            if max_tolerance < 0: continue
             limit = target * (1 + max_tolerance)
             if param_values[nutrient] > limit:
                 print("Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
@@ -93,8 +94,10 @@ class CNEM_Calc:
         for nutrient in self.nutrition_constraints:
             target = nutrition_constraints[nutrient][0]
             min_tolerance = nutrition_constraints[nutrient][1]
+            if min_tolerance < 0: continue
             limit = target * (1 - min_tolerance)
             if param_values[nutrient] < limit:
+                print("Min Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
                 return False
         return True
 
