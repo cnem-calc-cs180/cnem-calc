@@ -9,7 +9,7 @@ if __name__ == "__main__":
     n_meals = 3
     n_mealsets = 5
 
-    if True:
+    if False:
         recipes_filename = "test_data/recipes.csv"
         prices_filename = "test_data/p.csv"
         constraints_filename = "test_data/c.csv"
@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     meal_calc = CNEM_Calc(recipes_h, recipes, prices, nutrition)
     meal_calc.n_mealsets = n_mealsets
+    meal_calc.n_meals = n_meals
 
     print("Test 1: w/ branch and bounds")
     print("Raw output: ", meal_calc.recursive_backtrack())
@@ -54,7 +55,8 @@ if __name__ == "__main__":
         nutrition = list(csv.reader(nutrition_db))
 
     meal_calc_2 = CNEM_Calc(recipes_h, recipes, prices, nutrition)
-    meal_calc_2.n_mealsets
+    meal_calc_2.n_mealsets = n_mealsets
+    meal_calc_2.n_meals = n_meals
 
     print("Test 2: w/o branch and bounds")
     print("Raw output: ", meal_calc_2.recursive_backtrack_no_bounds())

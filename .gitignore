@@ -1,3 +1,4 @@
 # Test file for trying python shit
 test.py
 test_data/
+__pycache__/

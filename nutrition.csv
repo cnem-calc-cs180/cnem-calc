@@ -1,4 +1,4 @@
-energy,2079.35,0.5,0.1
-protein,50,0.2,-1
-fat,70,-1,4
-carbohydrates,310,0.5,6
+energy,2079.35,0.1,0,1
+protein,50,0.1,0.1
+fat,70,0.1,0.1
+carbohydrates,310,0.1,0.1
