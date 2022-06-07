@@ -2,11 +2,10 @@
 The Cost-to-Nutrition Efficiency Calculator (cnem-calc) is an AI-based program that suggests meals that are both cheap and nutritious using backtracking search. It uses ingredient prices from market price reports, ingredients and nutritional values of meals from online recipes and daily nutritional constraints to determine which meals to suggest. _It doesn't really analyze efficiency. It was a working title and the name stuck._
 
 
-## Basic Operation
-### Prerequisites
+## Prerequisites
 - Python 3
 
-### How to Use
+## How to Use
 The program should come with demo datasets that have the filenames that are used by the program by default. These default filenames are:
 - `recipes.csv` for the recipe database
 - `prices.csv` for the ingredient prices
@@ -16,6 +15,7 @@ To use the calculator, simply run the Python file, `cnem_calc.py`:
 
 `py cnem_calc.py` or `python3 cnem_calc.py`
 
+### Options
 These use the default CSV files as described above as input. To override the defalt filepaths, __Options__ may be added to the command. Currently only CSV format is supported.
 - `-r <filepath>` - Uses `<filepath>` as the recipe database source
 - `-p <filepath>` - Uses `<filepath>` as the ingredient price source
