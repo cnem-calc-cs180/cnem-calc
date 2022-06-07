@@ -39,13 +39,21 @@ class CNEM_Calc:
             self.FIELD_INDEX[field] = recipes_h.index(field)
 
     def get_meal_value(self, meal_index, param):
-        return meal_index[self.FIELD_INDEX[param]]
+        output = self.recipes[meal_index][self.FIELD_INDEX[param]]
+        try:
+            output = float(output)
+        except:
+            output = 0
+        return output
 
     def get_mealset_value(self, mealset, param):
         value = 0
         for meal in mealset:
-            value += meal[self.FIELD_INDEX[param]]
+            value += self.get_meal_value(meal, param)
         return value
+
+    def get_mealset_cost(self, mealset):
+        return self.get_mealset_value(mealset, "cost")
 
     def within_max_constraints(self, current_meals, param_values, valid_mealsets):
         for constraint_func in self.max_constraint_funcs:
@@ -57,11 +65,11 @@ class CNEM_Calc:
         n_mealsets = self.n_mealsets
         if len(valid_mealsets) < n_mealsets:
             return True
-        return param_values["cost"] <= self.get_mealset_value(valid_mealsets[n_mealsets - 1])
+        return param_values["cost"] <= self.get_mealset_value(valid_mealsets[n_mealsets - 1], "cost")
 
     def max_nutrition_limit(self, current_meals, param_values, valid_mealsets):
         nutrition_constraints = self.nutrition_constraints
-        for nutrient in self.nutrients:
+        for nutrient in nutrition_constraints.keys():
             target = nutrition_constraints[nutrient][0]
             max_tolerance = nutrition_constraints[nutrient][2]
             limit = target * (1 + max_tolerance)
@@ -77,7 +85,7 @@ class CNEM_Calc:
 
     def min_nutrition_requirement(self, current_meals, param_values, valid_mealsets):
         nutrition_constraints = self.nutrition_constraints
-        for nutrient in self.nutrients:
+        for nutrient in self.nutrition_constraints:
             target = nutrition_constraints[nutrient][0]
             min_tolerance = nutrition_constraints[nutrient][1]
             limit = target * (1 - min_tolerance)
@@ -90,27 +98,29 @@ class CNEM_Calc:
         n_meals = self.n_meals
         n_mealsets = self.n_mealsets
         parameters = self.parameters
-        param_values = {parameter : 0 for parameter in parameters} if parameters == {} else param_values
+        param_values = {parameter : 0 for parameter in parameters} if param_values == {} else param_values
 
         if len(current_meals) >= n_meals:
-            if not self.within_min_constraints(current_meals, valid_mealsets):
+            if not self.within_min_constraints(current_meals, param_values, valid_mealsets):
                 return valid_mealsets
             valid_mealsets.append(current_meals)
-            valid_mealsets.sort(key=self.mealset_cost)
+            valid_mealsets.sort(key=self.get_mealset_cost)
             too_expensive = [] if len(valid_mealsets) <= n_mealsets else valid_mealsets[n_mealsets:]
             valid_mealsets = valid_mealsets if len(valid_mealsets) <= n_mealsets else valid_mealsets[:n_mealsets]
             return valid_mealsets
         
         previous_index = current_meals[-1] if len(current_meals) > 0 else 0
-        for n in range(previous_index+1, n_meals):
+        for n in range(previous_index+1, n_recipes):
+            print(current_meals, "+", n)
             next_meal_index = n
             next_meals = current_meals + [next_meal_index]
             next_param_values = { \
                 parameter : param_values[parameter] + self.get_meal_value(n, parameter) \
                 for parameter in parameters}
             if not self.within_max_constraints(next_meals, next_param_values, valid_mealsets):
+                print("OOF")
                 continue
-            valid_mealsets = self.backtrack(next_meals, valid_mealsets, next_param_values)
+            valid_mealsets = self.recursive_backtrack(next_meals, valid_mealsets, next_param_values)
         
         return valid_mealsets
 
@@ -164,6 +174,7 @@ if __name__ == "__main__":
         nutrition = list(csv.reader(nutrition_db))
 
     meal_calc = CNEM_Calc(recipes_h, recipes, prices, nutrition)
+    print(meal_calc.recursive_backtrack())
     
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
 
