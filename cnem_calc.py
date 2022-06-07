@@ -79,7 +79,7 @@ class CNEM_Calc:
             if max_tolerance < 0: continue
             limit = target * (1 + max_tolerance)
             if param_values[nutrient] > limit:
-                print("Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
+                #print("Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
                 return False
         return True
 
@@ -97,7 +97,7 @@ class CNEM_Calc:
             if min_tolerance < 0: continue
             limit = target * (1 - min_tolerance)
             if param_values[nutrient] < limit:
-                print("Min Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
+                #print("Min Rip ", current_meals, " ", nutrient, " - ", param_values[nutrient])
                 return False
         return True
 
@@ -192,9 +192,40 @@ if __name__ == "__main__":
     buf = ""
 
     print(output)
+    print()
+    #Display suggestions
+    print("Top 5 Suggestions\n")
+    for i in range(5):
+        if i == len(output):
+            break
+        print("--------------------------------------------------")
+        print("Suggestion " + str(i+1) + " - P" + str(round(meal_calc.get_mealset_cost(output[i]),2)) + ":")
+        s = output[i]
+        for meal in s:
+            print(" - " + meal_calc.recipes[meal][1])
+        print()
 
-    while (buf not in ["-1", "exit"]):
-        buf = input("Pahingi suggestion number: ")
+            
+    while True:
+        buf = input("Pahingi suggestion number (type -1 to stop): ")
+        if buf in ["-1", "exit"]:
+                break
+        try:
+            buf = int(buf)
+            if buf > len(output):
+                print("Try a smaller number")
+                continue
+            print("--------------------------------------------------")
+            print("Suggestion " + str(buf) + " - P" + str(round(meal_calc.get_mealset_cost(output[buf-1]),2)) + ":")
+            for meal in s:
+                print(" - " + meal_calc.recipes[meal][buf])
+            print()
+
+            #Ingredients
+        except:
+             print("Please enter a valid number")
+        
+        
         # output ingredients for output[int(buf)]
     
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
