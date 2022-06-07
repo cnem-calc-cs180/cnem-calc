@@ -28,11 +28,13 @@ class CNEM_Calc:
         #cost calculation
         for index, recipe in enumerate(self.recipes):
             cost = 0
+            serving_scale = float(recipes[index][recipes_h.index('servings/head')]) / float(recipes[index][recipes_h.index('serving size')])
             for ingredient in self.prices:
-                ingredient_name = ingredient[0]
-                ingredient_price = ingredient[1]
-                if not recipes[index][recipes_h.index(ingredient_name)]: continue
-                cost += float(recipes[index][recipes_h.index(ingredient_name)]) * float(ingredient_price) # if preprocessed, can remove float typecast
+                if not recipes[index][recipes_h.index(ingredient[0])]: continue
+                cost += float(recipes[index][recipes_h.index(ingredient[0])]) * float(ingredient[1]) # if preprocessed, can remove float typecast
+            for nutrient in self.nutrients:
+                recipes[index][recipes_h.index(nutrient)] = str(float(recipes[index][recipes_h.index(nutrient)]) * serving_scale)
+            cost *= serving_scale
             self.recipes[index] += [cost]
         recipes_h += ["cost"]
 
