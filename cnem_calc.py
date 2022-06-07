@@ -29,8 +29,10 @@ class CNEM_Calc:
         for index, recipe in enumerate(self.recipes):
             cost = 0
             for ingredient in self.prices:
-                if not recipes[index][recipes_h.index(ingredient[0])]: continue
-                cost += float(recipes[index][recipes_h.index(ingredient[0])]) * float(ingredient[1]) # if preprocessed, can remove float typecast
+                ingredient_name = ingredient[0]
+                ingredient_price = ingredient[1]
+                if not recipes[index][recipes_h.index(ingredient_name)]: continue
+                cost += float(recipes[index][recipes_h.index(ingredient_name)]) * float(ingredient_price) # if preprocessed, can remove float typecast
             self.recipes[index] += [cost]
         recipes_h += ["cost"]
 
@@ -111,14 +113,14 @@ class CNEM_Calc:
         
         previous_index = current_meals[-1] if len(current_meals) > 0 else 0
         for n in range(previous_index+1, n_recipes):
-            print(current_meals, "+", n)
+            # print(current_meals, "+", n)
             next_meal_index = n
             next_meals = current_meals + [next_meal_index]
             next_param_values = { \
                 parameter : param_values[parameter] + self.get_meal_value(n, parameter) \
                 for parameter in parameters}
             if not self.within_max_constraints(next_meals, next_param_values, valid_mealsets):
-                print("OOF")
+                # print("OOF")
                 continue
             valid_mealsets = self.recursive_backtrack(next_meals, valid_mealsets, next_param_values)
         
