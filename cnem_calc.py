@@ -174,6 +174,12 @@ if __name__ == "__main__":
         nutrition = list(csv.reader(nutrition_db))
 
     meal_calc = CNEM_Calc(recipes_h, recipes, prices, nutrition)
+    
+    if "--nm" in args:
+        meal_calc.n_meals = int(args[args.index("--nm")+1].replace('"', '').replace("'", ""))
+    if "--ns" in args:
+        meal_calc.n_mealsets = int(args[args.index("--ns")+1].replace('"', '').replace("'", ""))
+
     print(meal_calc.recursive_backtrack())
     
     # pwedeng sa CNEM_Calc nang iimplement yung pag-open ng files
